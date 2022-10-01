@@ -1,1 +1,1 @@
-C:\Users\eskil\source\repos\IndaPlus22\eskilny-task-3\chess_template\target\debug\chess_template.exe: C:\Users\eskil\source\repos\IndaPlus22\eskilny-task-3\chess_template\src\lib.rs C:\Users\eskil\source\repos\IndaPlus22\eskilny-task-3\chess_template\src\main.rs
+C:\Users\eskil\source\repos\indaplus22\eskilny-task-3\chess\target\debug\chess_template.exe: C:\Users\eskil\source\repos\indaplus22\eskilny-task-3\chess\src\lib.rs C:\Users\eskil\source\repos\indaplus22\eskilny-task-3\chess\src\main.rs
