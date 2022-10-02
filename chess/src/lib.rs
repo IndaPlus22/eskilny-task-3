@@ -194,8 +194,6 @@ impl Position {
 ///
 /// * `new()` which instantiates the game.
 /// * `make_move(from_str, to_str)` which, if legal, makes a move from some pos XF to some pos XF and returns the resulting error or new GameState.
-/// * `is_check(colour, recursion_order)` WHICH SHOULD ONLY BE USED INTERNALLY. It checks whether the board in it's current state implies a check for the colour in question.
-/// It is not meant for checking whether the board is in state Check! Use .get_game_state() for that!
 /// * `get_game_state()` returns the state of the game.
 /// * `get_active_colour()` returns the active colour.
 /// * `get_board()` returns the board.
@@ -389,7 +387,7 @@ impl Game {
         some move puts the king in check when it is performed. A "possible" or "legal" move is thus defined as a move that
         can be performed without putting the king at risk.
         */
-        if self.is_check(self.active_colour, 0) {
+        if self.is_in_check(self.active_colour, 0) {
             if self.can_make_legal_move(self.active_colour) {
                 self.state = GameState::Check;
             } else {
@@ -413,7 +411,7 @@ impl Game {
     ///
     /// Note that this function calls `get_possible_moves` again which calls this function.
     /// To avoid infinite recursion, we pass the variable `recursion_order` which is incremented by `get_possible_moves`.
-    pub fn is_check(&self, colour: Colour, recursion_order: i32) -> bool {
+    fn is_in_check(&self, colour: Colour, recursion_order: i32) -> bool {
         let king_pos = self.find_king_pos(colour);
 
         // eprintln!("Assessing game variant for king of colour {:?}:\n{}\n", colour, self); // DEBUG
@@ -624,7 +622,7 @@ impl Game {
                             possible_moves.push(ok_pos);
                         }
 
-                        if trial.1 == false {
+                        if !trial.1 {
                             break;
                         }
                     }
@@ -643,14 +641,14 @@ impl Game {
                             possible_moves.push(ok_pos);
                         }
 
-                        if trial.1 == false {
+                        if !trial.1 {
                             break;
                         }
                     }
                 }
             }
             PieceType::Knight => {
-                // Bishops can move according to eight movesets.
+                // Knight can move according to eight movesets.
                 // See the comment above the match-case for details on the implementation.
                 for offset in [
                     (2, 1),
@@ -663,13 +661,13 @@ impl Game {
                     (2, -1),
                 ] {
                     let trial = self.try_move(pos, offset, recursion_order);
-                    if trial.0 == true {
+                    if trial.0 {
                         let mut ok_pos = pos.clone();
                         ok_pos.offset_self(offset).unwrap(); // unwrap is safe after try_move
                         possible_moves.push(ok_pos);
                     }
 
-                    if trial.1 == false {
+                    if !trial.1 {
                         break;
                     }
                 }
@@ -677,17 +675,17 @@ impl Game {
             PieceType::Rook => {
                 // Rooks can move all non-diagonal directions and however far they like. (The board is size 8.)
                 // See the comment above the match-case for details on the implementation.
-                for dir in [(1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)] {
+                for dir in [(1, 0), (0, 1), (0, -1), (-1, 0)] {
                     for len in 1..8 {
                         let offset = (dir.0 * len, dir.1 * len);
                         let trial = self.try_move(pos, offset, recursion_order);
-                        if trial.0 == true {
+                        if trial.0 {
                             let mut ok_pos = pos.clone();
                             ok_pos.offset_self(offset).unwrap(); // unwrap is safe after try_move
                             possible_moves.push(ok_pos);
                         }
 
-                        if trial.1 == false {
+                        if !trial.1 {
                             break;
                         }
                     }
@@ -815,7 +813,7 @@ impl Game {
             None => {
                 engine_should_continue = true;
                 if recursion_order < Game::MAX_RECURSIONS {
-                    legal_move = !game_after_movement.is_check(player_colour, recursion_order);
+                    legal_move = !game_after_movement.is_in_check(player_colour, recursion_order);
                 } else {
                     legal_move = true;
                 }
@@ -831,7 +829,7 @@ impl Game {
                 // ... else the move is legal if the king is not in check after movement
                 else {
                     if recursion_order < Game::MAX_RECURSIONS {
-                        legal_move = !game_after_movement.is_check(player_colour, recursion_order);
+                        legal_move = !game_after_movement.is_in_check(player_colour, recursion_order);
                     } else {
                         legal_move = true;
                     }
