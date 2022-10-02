@@ -10,7 +10,10 @@ fn main() {
         let input = io::stdin();
         let mut lines = input.lock().lines(); // we've built an iterator over the lines input to stdin
 
-        println!("This is the current board. It is {}'s turn.", game.get_active_colour());
+        println!(
+            "This is the current board. It is {}'s turn.",
+            game.get_active_colour()
+        );
         println!("{}", game);
         println!("Please input your move (on the format 'XF XF' where X is a character and F is a number).");
 

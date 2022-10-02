@@ -195,7 +195,7 @@ impl Position {
 /// * `new()` which instantiates the game.
 /// * `make_move(from_str, to_str)` which, if legal, makes a move from some pos XF to some pos XF and returns the resulting error or new GameState.
 /// * `is_check(colour, recursion_order)` WHICH SHOULD ONLY BE USED INTERNALLY. It checks whether the board in it's current state implies a check for the colour in question.
-/// It is not meant for checking whether the board is in state Check! Use .get_game_state() for that! 
+/// It is not meant for checking whether the board is in state Check! Use .get_game_state() for that!
 /// * `get_game_state()` returns the state of the game.
 /// * `get_active_colour()` returns the active colour.
 /// * `get_board()` returns the board.
@@ -494,6 +494,12 @@ impl Game {
     ///
     /// Uses the field `last_moved_to` due to expected use of the library. Will break if used to promote a piece which was not just moved.
     pub fn set_promotion(&mut self, piece: String) -> Result<GameState, String> {
+        if self.state != GameState::WaitingOnPromotionChoice {
+            return Err(String::from(format!(
+                "The game is not currently waiting on a promotion. Currently, the state is {:?}.",
+                self.state
+            )));
+        }
         let piece_lowercase = piece.to_lowercase();
 
         let piece_type = match piece_lowercase.trim() {
@@ -537,8 +543,8 @@ impl Game {
         self.active_colour
     }
 
-    pub fn get_board(&self) -> &[Option<Piece>; 8*8] {
-        return &self.board
+    pub fn get_board(&self) -> &[Option<Piece>; 8 * 8] {
+        return &self.board;
     }
 
     /// If a piece is standing on the given tile, return all possible
@@ -952,6 +958,7 @@ mod tests {
             .any(|pos| pos == &other_position)); // Checks if our position is equal to the list of possible moves. We use .any() since the objects may be different instances.
     }
 
+    // check that game state is check after the queen attacks the king
     #[test]
     fn game_enters_check() {
         let mut game = Game::new();
@@ -971,6 +978,8 @@ mod tests {
         assert_eq!(game.get_game_state(), GameState::Check);
     }
 
+    // check that the game state is checkmate after "skolmatt"
+    // due to the nature of the library, this also verifies that stalemate-checking will work
     #[test]
     fn game_enters_checkmate() {
         let mut game = Game::new();
@@ -978,6 +987,8 @@ mod tests {
         d7 d6
         e1 c3
         d6 d5
+        c1 f4
+        d5 d4
         c3 c7"
             .split_whitespace()
             .collect();
@@ -987,9 +998,11 @@ mod tests {
             assert!(result.is_ok());
         }
 
-        assert_eq!(game.get_game_state(), GameState::Check);
+        eprintln!("{}", game);
+        assert_eq!(game.get_game_state(), GameState::GameOver);
     }
 
+    // verify that the game enters the state waitingonpromotionchoice if a pawn should be promoted
     #[test]
     fn game_enters_waitingonpromitionchoice() {
         let mut game = Game::new();
@@ -1020,6 +1033,41 @@ mod tests {
         assert_eq!(game.get_game_state(), GameState::WaitingOnPromotionChoice);
     }
 
+    // verify that a pawn can be promoted
+    #[test]
+    fn game_promotes_correctly() {
+        let mut game = Game::new();
+        let moves: Vec<&str> = "e2 e3
+        d7 d6
+        e3 e4
+        d6 d5
+        e4 d5
+        d8 d7
+        d5 d6
+        d7 c6
+        d6 d7
+        c6 c5
+        d7 d8"
+            .split_whitespace()
+            .collect();
+
+        for i in 0..(moves.len() / 2) {
+            let result = game.make_move(moves[2 * i], moves[2 * i + 1]);
+            eprintln!(
+                "{} {}: {:?}",
+                moves[2 * i],
+                moves[2 * i + 1],
+                result.unwrap()
+            );
+        }
+
+        assert_eq!(game.get_game_state(), GameState::WaitingOnPromotionChoice);
+        assert!(game.set_promotion(String::from("queen")).is_ok());
+        assert_eq!(game.get_game_state(), GameState::InProgress);
+        eprintln!("{}", game);
+    }
+
+    // verify that the output is accurate
     #[test]
     fn output_accurate() {
         let game = Game::new();
