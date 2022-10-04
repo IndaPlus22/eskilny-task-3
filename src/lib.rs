@@ -14,7 +14,7 @@ use std::fmt;
 /// the recently moved pawn should be promoted to.
 /// - `GameOver` describes a finished game. All state-altering functions will not work in this state.
 /// This state is reached either by reaching a checkmate, stalemate or by a user-submitted defeat.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum GameState {
     InProgress,
     Check,
@@ -25,7 +25,7 @@ pub enum GameState {
 /// Enum for the colours of the board. Is implemented as an auxiliary state for by e.g. Piece and Game.
 ///
 /// Contains the variants `White` and `Black`.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Colour {
     White,
     Black,
@@ -45,7 +45,7 @@ impl Colour {
 /// Enum for the type of piece referenced. Implements a value per piece for comparative calculations. Is implemented by e.g. `Piece`.
 ///
 /// Contains the variants `King`, `Queen`, `Rook`, `Knight`, `Bishop`, `Pawn`.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum PieceType {
     King,
     Queen,
@@ -55,7 +55,7 @@ pub enum PieceType {
     Pawn,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 /// Struct for some Piece.
 ///
 /// Is used in the engine as an Option<Piece>-structure implementing None where there are no pieces and Some(Piece) where there are pieces.
@@ -66,7 +66,7 @@ pub struct Piece {
     colour: Colour,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 /// Struct for some position. Contains the fields `row` and `col` corresponding to the row and col represented, individually,
 /// as well as the field `idx` corresponding to the index of the position in the board array.
 ///
