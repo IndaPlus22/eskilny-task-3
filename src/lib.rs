@@ -73,9 +73,9 @@ pub struct Piece {
 /// Note the implementations of `Position::new(row, col)`, `Position::new_from_idx(idx)` and `Position::parse_str(str)` perform error handling.
 /// Every instance of Position should represent a legal position, or else the functions will return an Err Result.
 pub struct Position {
-    row: usize,
-    col: usize,
-    idx: usize,
+    pub row: usize,
+    pub col: usize,
+    pub idx: usize,
 }
 
 impl Position {
