@@ -62,8 +62,8 @@ pub enum PieceType {
 ///
 /// Contains the fields piece_type of type PieceType and colour of type Colour.
 pub struct Piece {
-    piece_type: PieceType,
-    colour: Colour,
+    pub piece_type: PieceType,
+    pub colour: Colour,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -293,12 +293,6 @@ impl Game {
     ///
     /// Updates all fields.
     pub fn make_move(&mut self, from_str: &str, to_str: &str) -> Result<GameState, String> {
-        // Checks that the game state is InProgress or Check, else throws an error.
-        if !(self.state == GameState::InProgress || self.state == GameState::Check) {
-            let error = format!("The game is not in a state where a move can be made. Currently, the state is {:?}.", self.state);
-            return Err(error);
-        }
-
         // parse from_str
         let from_pos = match Position::parse_str(&from_str) {
             Ok(result) => result,
@@ -310,6 +304,21 @@ impl Game {
             Ok(result) => result,
             Err(string) => return Err(string),
         };
+
+        return self.make_move_pos(from_pos, to_pos);
+    }
+
+    /// (Variant of `make_move` that takes Positions as input instead.)
+    /// If the current game state is InProgress or Check and the move is legal,
+    /// move a piece and return the resulting state of the game.
+    ///
+    /// Updates all fields.
+    pub fn make_move_pos(&mut self, from_pos: Position, to_pos: Position ) -> Result<GameState, String> {
+        // Checks that the game state is InProgress or Check, else throws an error.
+        if !(self.state == GameState::InProgress || self.state == GameState::Check) {
+            let error = format!("The game is not in a state where a move can be made. Currently, the state is {:?}.", self.state);
+            return Err(error);
+        }
 
         // check that the the piece is not None and is of the right colour
         match self.board[from_pos.idx] {
@@ -658,17 +667,13 @@ impl Game {
                     (-1, 2),
                     (-1, -2),
                     (-2, 1),
-                    (2, -1),
+                    (-2, -1),
                 ] {
                     let trial = self.try_move(pos, offset, recursion_order);
                     if trial.0 {
                         let mut ok_pos = pos.clone();
                         ok_pos.offset_self(offset).unwrap(); // unwrap is safe after try_move
                         possible_moves.push(ok_pos);
-                    }
-
-                    if !trial.1 {
-                        break;
                     }
                 }
             }

@@ -26,12 +26,14 @@ fn main() {
             .trim() // remove whitespaces
             .split(" ")
             .collect();
-
+            
         // provide state and colour reading to user
         if input[0] == "state" {
             println!("{:?}", game.get_game_state());
         } else if input[0] == "colour" {
             println!("{:?}", game.get_active_colour());
+        } else if input[0] == "gm" {
+            println!("{:?}", game.get_possible_moves(lib::Position::parse_str(input[1]).unwrap(), 0));
         } else if input.len() == 2 {
             // try to make the move
             match game.make_move(input[0], input[1]) {
